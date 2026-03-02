@@ -11,7 +11,7 @@ body{
     
     background: 
         linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
-        url("ton-image.jpg");
+        url("Metz.jpg");
         
     background-size: cover;
     background-position: center;
