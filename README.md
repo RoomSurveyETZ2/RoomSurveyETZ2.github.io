@@ -1,1 +1,120 @@
-# RoomSurveyETZ2.github.io
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Sondage - Lorraine</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#b11226,#ffffff,#f7d117);
+}
+
+.container{
+    max-width:800px;
+    margin:40px auto;
+    background:white;
+    padding:40px;
+    border-radius:20px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.3);
+}
+
+h1{
+    text-align:center;
+    color:#b11226;
+}
+
+.option{
+    margin:15px 0;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    background:#b11226;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#8c0f1e;
+}
+
+.vote-result{
+    margin-top:5px;
+    font-size:14px;
+    text-align:right;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>Quels noms préfères-tu pour les salles de formations ?</h1>
+<div id="optionsContainer"></div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    const options = [
+        "Graoully",
+        "Verdun",
+        "Robert Schuman",
+        "Stanislas",
+        "Mirabelle",
+        "Cathédrale Saint-Étienne",
+        "Mont Saint-Quentin",
+        "Les Vosges",
+        "La Moselle",
+        "Madeleine de Commercy"
+    ];
+
+    const container = document.getElementById("optionsContainer");
+
+    // 🔹 Charger les votes depuis localStorage
+    let votes = JSON.parse(localStorage.getItem("lorraineVotes"));
+
+    if (!votes || votes.length !== options.length) {
+        votes = new Array(options.length).fill(0);
+    }
+
+    function saveVotes() {
+        localStorage.setItem("lorraineVotes", JSON.stringify(votes));
+    }
+
+    options.forEach(function(option, index) {
+
+        const div = document.createElement("div");
+        div.className = "option";
+
+        const button = document.createElement("button");
+        button.textContent = option;
+
+        const result = document.createElement("div");
+        result.className = "vote-result";
+        result.textContent = "Votes : " + votes[index];
+
+        button.addEventListener("click", function() {
+            votes[index]++;
+            result.textContent = "Votes : " + votes[index];
+            saveVotes();
+        });
+
+        div.appendChild(button);
+        div.appendChild(result);
+        container.appendChild(div);
+
+    });
+
+});
+</script>
+
+</body>
+</html>
