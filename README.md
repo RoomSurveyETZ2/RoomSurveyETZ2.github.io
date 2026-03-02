@@ -75,8 +75,8 @@ h1{
 
 .floating-img{
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 60px;
+    left: 60px;
     width: 120px;
     z-index: 10;
 }
