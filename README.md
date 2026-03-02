@@ -258,7 +258,7 @@ if(hasVoted){
 
 </script>
 
-<img src="croix.png" class="floating-img">
+<img src="croix2.png" class="floating-img">
 
 </body>
 </html>
