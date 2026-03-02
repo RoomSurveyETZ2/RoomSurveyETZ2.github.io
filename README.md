@@ -157,9 +157,18 @@ function showVotingUI() {
   });
 }
 
-function showResults(data) {
+function showResults(data, alreadyVoted = false) {
   container.innerHTML = "";
   confirmBtn.style.display = "none";
+
+  if(alreadyVoted){
+    const msg = document.createElement("div");
+    msg.style.marginBottom = "20px";
+    msg.style.fontWeight = "bold";
+    msg.style.color = "#b11226";
+    msg.textContent = "Vous avez déjà voté ! Voici les résultats :";
+    container.appendChild(msg);
+  }
 
   const total = Object.values(data).reduce((a,b)=>a+b,0);
 
@@ -210,13 +219,26 @@ confirmBtn.addEventListener("click", async function(){
 
   await vote(selectedNames);
 
+  // MARQUER L'UTILISATEUR COMME AYANT VOTÉ
+  localStorage.setItem("hasVoted", "true");
+
   const updatedData = await loadVotes();
   showResults(updatedData);
 });
 
 // Initialisation
 const initialData = await loadVotes();
-showVotingUI();
+
+// Vérifier si l'utilisateur a déjà voté
+const hasVoted = localStorage.getItem("hasVoted");
+
+if(hasVoted){
+  // Afficher message + résultats si déjà voté
+  showResults(initialData, true);
+} else {
+  // Sinon, afficher le formulaire
+  showVotingUI();
+}
 
 </script>
 
