@@ -8,7 +8,14 @@
 body{
     margin:0;
     font-family: Arial, sans-serif;
-    background: linear-gradient(135deg,#b11226,#ffffff,#f7d117);
+    
+    background: 
+        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+        url("ton-image.jpg");
+        
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
 
 .container{
