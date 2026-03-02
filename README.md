@@ -1,9 +1,11 @@
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <title>Sondage - Lorraine</title>
 
 <style>
+
 body{
     margin:0;
     font-family: Arial, sans-serif;
@@ -28,7 +30,8 @@ h1{
     margin:15px 0;
 }
 
-button{
+.confirm-btn{
+    margin-top:25px;
     width:100%;
     padding:15px;
     border:none;
@@ -40,14 +43,28 @@ button{
     cursor:pointer;
 }
 
-button:hover{
+.confirm-btn:hover{
     background:#8c0f1e;
 }
 
-.vote-result{
-    margin-top:5px;
-    font-size:14px;
+.result-bar{
+    margin-top:8px;
+    height:25px;
+    background:#eee;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.result-fill{
+    height:100%;
+    width:0%;
+    background:#b11226;
     text-align:right;
+    padding-right:10px;
+    color:white;
+    font-weight:bold;
+    line-height:25px;
+    transition: width 1s ease;
 }
 </style>
 </head>
@@ -56,63 +73,152 @@ button:hover{
 
 <div class="container">
 <h1>Quels noms préfères-tu pour les salles de formations ?</h1>
+
 <div id="optionsContainer"></div>
+
+<button id="confirmVote" class="confirm-btn">
+Confirmer le vote
+</button>
+
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
+<script type="module">
 
-    const options = [
-        "Graoully",
-        "Verdun",
-        "Robert Schuman",
-        "Stanislas",
-        "Mirabelle",
-        "Cathédrale Saint-Étienne",
-        "Mont Saint-Quentin",
-        "Les Vosges",
-        "La Moselle",
-        "Madeleine de Commercy"
-    ];
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const container = document.getElementById("optionsContainer");
+const firebaseConfig = {
+  apiKey: "AIzaSyAFZCwpU4RbuSsGicKRsPY6wfjiroJWyk4",
+  authDomain: "survey-rooms.firebaseapp.com",
+  projectId: "survey-rooms",
+  storageBucket: "survey-rooms.firebasestorage.app",
+  messagingSenderId: "955956214197",
+  appId: "1:955956214197:web:0d4daed320fa993af481fc"
+};
 
-    // 🔹 Charger les votes depuis localStorage
-    let votes = JSON.parse(localStorage.getItem("lorraineVotes"));
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    if (!votes || votes.length !== options.length) {
-        votes = new Array(options.length).fill(0);
-    }
+const options = [
+"Graoully",
+"Verdun",
+"Robert Schuman",
+"Stanislas",
+"Mirabelle",
+"Cathédrale Saint-Étienne",
+"Mont Saint-Quentin",
+"Les Vosges",
+"La Moselle",
+"Madeleine de Commercy"
+];
 
-    function saveVotes() {
-        localStorage.setItem("lorraineVotes", JSON.stringify(votes));
-    }
+const voteDoc = doc(db, "survey", "results");
 
-    options.forEach(function(option, index) {
+const container = document.getElementById("optionsContainer");
+const confirmBtn = document.getElementById("confirmVote");
 
-        const div = document.createElement("div");
-        div.className = "option";
+async function loadVotes() {
+  const docSnap = await getDoc(voteDoc);
 
-        const button = document.createElement("button");
-        button.textContent = option;
+  if (!docSnap.exists()) {
+    const initialData = {};
+    options.forEach(name => initialData[name] = 0);
+    await setDoc(voteDoc, initialData);
+    return initialData;
+  }
 
-        const result = document.createElement("div");
-        result.className = "vote-result";
-        result.textContent = "Votes : " + votes[index];
+  return docSnap.data();
+}
 
-        button.addEventListener("click", function() {
-            votes[index]++;
-            result.textContent = "Votes : " + votes[index];
-            saveVotes();
-        });
+async function vote(selectedOptions) {
+  const updates = {};
+  selectedOptions.forEach(name => {
+    updates[name] = increment(1);
+  });
+  await updateDoc(voteDoc, updates);
+}
 
-        div.appendChild(button);
-        div.appendChild(result);
-        container.appendChild(div);
+function showVotingUI() {
+  options.forEach((option,index)=>{
+    const div = document.createElement("div");
+    div.className = "option";
 
-    });
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = "opt-"+index;
 
+    const label = document.createElement("label");
+    label.htmlFor = "opt-"+index;
+    label.textContent = " " + option;
+
+    div.appendChild(checkbox);
+    div.appendChild(label);
+    container.appendChild(div);
+  });
+}
+
+function showResults(data) {
+  container.innerHTML = "";
+  confirmBtn.style.display = "none";
+
+  const total = Object.values(data).reduce((a,b)=>a+b,0);
+
+  options.forEach(option=>{
+    const div = document.createElement("div");
+    div.className = "option";
+
+    const label = document.createElement("div");
+    label.textContent = option;
+
+    const bar = document.createElement("div");
+    bar.className = "result-bar";
+
+    const fill = document.createElement("div");
+    fill.className = "result-fill";
+
+    const percent = total === 0 ? 0 :
+      Math.round((data[option] / total) * 100);
+
+    fill.textContent = percent + "%";
+
+    bar.appendChild(fill);
+    div.appendChild(label);
+    div.appendChild(bar);
+    container.appendChild(div);
+
+    setTimeout(()=>{
+      fill.style.width = percent + "%";
+    },100);
+  });
+}
+
+confirmBtn.addEventListener("click", async function(){
+
+  const checked = document.querySelectorAll("input[type=checkbox]:checked");
+
+  if(checked.length === 0){
+    alert("Veuillez sélectionner au moins une option.");
+    return;
+  }
+
+  const selectedNames = [];
+
+  checked.forEach(box=>{
+    const index = parseInt(box.id.split("-")[1]);
+    selectedNames.push(options[index]);
+  });
+
+  await vote(selectedNames);
+
+  const updatedData = await loadVotes();
+  showResults(updatedData);
 });
+
+// Initialisation
+const initialData = await loadVotes();
+showVotingUI();
+
 </script>
 
 </body>
