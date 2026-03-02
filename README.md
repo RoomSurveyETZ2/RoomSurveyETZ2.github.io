@@ -72,6 +72,15 @@ h1{
     line-height:25px;
     transition: width 1s ease;
 }
+
+.floating-img{
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 120px;
+    z-index: 10;
+}
+
 </style>
 </head>
 
@@ -248,6 +257,8 @@ if(hasVoted){
 }
 
 </script>
+
+<img src="croix.png" class="floating-img">
 
 </body>
 </html>
